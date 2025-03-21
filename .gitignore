@@ -4,6 +4,7 @@
 # .tfstate files
 *.tfstate
 *.tfstate.*
+.terraform.lock.hcl
 
 # Crash log files
 crash.log
@@ -15,6 +16,7 @@ crash.*.log
 # to change depending on the environment.
 *.tfvars
 *.tfvars.json
+*.tfvars*
 
 # Ignore override files as they are usually used to override resources locally and so
 # are not checked in
@@ -22,6 +24,7 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+install_rancher.sh.bk
 
 # Ignore transient lock info files created by terraform apply
 .terraform.tfstate.lock.info
