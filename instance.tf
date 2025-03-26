@@ -87,3 +87,10 @@ output "static_public_ipv4" {
   value = aws_eip.static_ip.public_ip
 }
 
+# Output the vpc and subnet details used in the automation
+output "network_info" {
+  value = {
+    subnet_id = aws_subnet.rancher_subnet.id
+    vpc_id    = aws_vpc.rancher_vpc.id
+  }
+}
