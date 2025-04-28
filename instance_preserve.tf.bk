@@ -31,9 +31,8 @@ resource "aws_eip" "static_ip" {
   tags = {
     Name = "${var.prefix}-static-ip"
   }
-  
   lifecycle {
-	prevent_destroy = true
+    prevent_destroy = true
  }
 }
 
@@ -97,4 +96,31 @@ output "network_info" {
     subnet_id = aws_subnet.rancher_subnet.id
     vpc_id    = aws_vpc.rancher_vpc.id
   }
+}
+
+
+# Update the cattle config file and the vpc, subnet details in the configuration files
+resource "null_resource" "update_yaml" {
+  provisioner "local-exec" {
+    command = <<EOT
+      if [ -f "${var.input_cluster_config}"]; then
+        yq e '.machineconfig.data.subnetId = "${aws_subnet.rancher_subnet.id}" | .machineconfig.data.vpcId = "${aws_vpc.rancher_vpc.id}"' \
+          -i "${var.input_cluster_config}"
+      else
+        echo "Warning: inputClusterConfig.yaml not found. Skipping update."
+      fi
+      if [ -f "${var.cattle_config}" ]; then
+        yq e '.rancher.host = "rancher.${aws_eip.static_ip.public_ip}.sslip.io"' \
+          -i "${var.cattle_config}"
+      else
+	echo "Warning: ${var.cattle_config} not found. Skipping update."
+      fi
+    EOT
+  }
+
+  depends_on = [
+    aws_subnet.rancher_subnet,
+    aws_vpc.rancher_vpc,
+    aws_eip.static_ip
+  ]
 }

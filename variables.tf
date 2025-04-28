@@ -75,3 +75,15 @@ variable "encryption_secret_key" {
   type        = string
   sensitive   = true
 }
+
+variable "cattle_config" {
+  description = "cattle config file path"
+  type        = string
+  default     = "/tmp/cattle-config.yaml"
+}
+
+variable "input_cluster_config" {
+  description = "cluster config file path"
+  type        = string
+  default     = "/tmp/inputClusterConfig.yaml"
+}
