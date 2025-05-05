@@ -92,3 +92,9 @@ variable "input_cluster_config" {
   type        = string
   default     = "/tmp/inputClusterConfig.yaml"
 }
+
+variable "preserve_eip" {
+  description = "create the static eip and attach that to instance for migration scenario"
+  type        = bool
+  default     = false
+}

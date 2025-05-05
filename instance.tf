@@ -24,24 +24,34 @@ resource "aws_instance" "rke2_node" {
   }
 }
 
-# Allocate an Elastic IP for the instance
+# Allocate an Elastic IP for the instance in case the preserve_eip is set
 resource "aws_eip" "static_ip" {
+  count  = var.preserve_eip ? 1 : 0
   domain = "vpc"
 
   tags = {
     Name = "${var.prefix}-static-ip"
   }
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # Associate the Elastic IP with the EC2 instance
 resource "aws_eip_association" "eip_association" {
+  count         = var.preserve_eip ? 1 : 0
   instance_id   = aws_instance.rke2_node.id
-  allocation_id = aws_eip.static_ip.id
+  allocation_id = aws_eip.static_ip[0].id
+}
+
+# Determine the host IP (with conditional logic)
+locals {
+  rke2_host_ip = var.preserve_eip ? aws_eip.static_ip[0].public_ip : aws_instance.rke2_node.public_ip
 }
 
 # Use a null_resource to handle SSH-based provisioning
 resource "null_resource" "provision_rke2" {
-  depends_on = [aws_instance.rke2_node, aws_eip_association.eip_association]
+  depends_on = [aws_instance.rke2_node]
 
   provisioner "file" {
     source      = "install_rancher.sh"
@@ -51,7 +61,7 @@ resource "null_resource" "provision_rke2" {
       type        = "ssh"
       user        = "ubuntu"
       private_key = file("${var.private_key_path}")
-      host        = aws_eip.static_ip.public_ip
+      host        = local.rke2_host_ip
     }
   }
 
@@ -63,7 +73,7 @@ resource "null_resource" "provision_rke2" {
       type        = "ssh"
       user        = "ubuntu"
       private_key = file("${var.private_key_path}")
-      host        = aws_eip.static_ip.public_ip
+      host        = local.rke2_host_ip
     }
   }
 
@@ -77,14 +87,14 @@ resource "null_resource" "provision_rke2" {
       type        = "ssh"
       user        = "ubuntu"
       private_key = file("${var.private_key_path}")
-      host        = aws_eip.static_ip.public_ip
+      host        = local.rke2_host_ip
     }
   }
 }
 
 # Output the public IP of the instance
-output "static_public_ipv4" {
-  value = aws_eip.static_ip.public_ip
+output "public_ip" {
+  value = local.rke2_host_ip
 }
 
 # Output the vpc and subnet details used in the automation
@@ -107,7 +117,7 @@ resource "null_resource" "update_yaml" {
         echo "Warning: inputClusterConfig.yaml not found. Skipping update."
       fi
       if [ -f "${var.cattle_config}" ]; then
-        yq e '.rancher.host = "rancher.${aws_eip.static_ip.public_ip}.sslip.io"' \
+        yq e '.rancher.host = "rancher.${local.rke2_host_ip}.sslip.io"' \
           -i "${var.cattle_config}"
       else
 	echo "Warning: ${var.cattle_config} not found. Skipping update."
@@ -118,6 +128,6 @@ resource "null_resource" "update_yaml" {
   depends_on = [
     aws_subnet.rancher_subnet,
     aws_vpc.rancher_vpc,
-    aws_eip.static_ip
+    aws_instance.rke2_node
   ]
 }
