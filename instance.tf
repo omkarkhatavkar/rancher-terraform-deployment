@@ -50,7 +50,7 @@ resource "null_resource" "provision_rke2" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("~/${var.key_name}.pem")
+      private_key = file("${var.private_key_path}")
       host        = aws_eip.static_ip.public_ip
     }
   }
@@ -62,7 +62,7 @@ resource "null_resource" "provision_rke2" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("~/${var.key_name}.pem")
+      private_key = file("${var.private_key_path}")
       host        = aws_eip.static_ip.public_ip
     }
   }
@@ -76,7 +76,7 @@ resource "null_resource" "provision_rke2" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("~/${var.key_name}.pem")
+      private_key = file("${var.private_key_path}")
       host        = aws_eip.static_ip.public_ip
     }
   }

@@ -46,6 +46,11 @@ variable "key_name" {
   default     = "test"
 }
 
+variable "private_key_path" {
+  description = "Absolute path to the SSH private key"
+  type        = string
+}
+
 variable "root_volume_size" {
   description = "Root volume size for EC2 instance"
   type        = number
