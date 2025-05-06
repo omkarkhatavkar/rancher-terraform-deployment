@@ -10,8 +10,8 @@ resource "aws_instance" "rke2_node" {
   instance_type = var.instance_type
   key_name      = var.key_name
 
-  subnet_id              = aws_subnet.rancher_subnet.id
-  vpc_security_group_ids = [aws_security_group.rancher_sg_allowall.id]
+  subnet_id                   = aws_subnet.rancher_subnet.id
+  vpc_security_group_ids      = [aws_security_group.rancher_sg_allow_my_ip.id]
   associate_public_ip_address = var.preserve_eip ? false : true
 
   root_block_device {

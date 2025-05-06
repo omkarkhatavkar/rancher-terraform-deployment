@@ -29,8 +29,7 @@ ami_id              = "ami-87654321"
 instance_type       = "t3.medium"
 key_name            = "your-key"
 root_volume_size    = 50
-access_key          = "your-access-key"
-secret_key          = "your-secret-key"
+encryption_secret_key = ""
 ```
 
 ## 🚀 Deployment Steps
